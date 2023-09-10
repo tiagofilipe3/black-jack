@@ -22,5 +22,14 @@ const GameBoardContainer = styled.div`
 const Hand = styled.div`
   display: flex;
 `
+const Scoreboard = styled.div`
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin-top: 30px;
+  margin-right: 30px;
+`
 
-export { ActionButtons, GameBoardContainer, Hand, StyledButton }
+export { ActionButtons, GameBoardContainer, Hand, StyledButton, Scoreboard }

@@ -4,10 +4,12 @@ import {
   ActionButtons,
   GameBoardContainer,
   Hand,
+  Scoreboard,
   StyledButton as Button,
 } from './styles.ts'
 import Card from '../Card'
-import { Flex } from 'rebass'
+import { Box, Flex } from 'rebass'
+import { TScoreboard } from './types.ts'
 
 const GameBoard = ({
   countdown,
@@ -23,40 +25,22 @@ const GameBoard = ({
     'Player' | 'Dealer' | 'Draw' | undefined
   >(undefined)
   const [secondsRemaining, setSecondsRemaining] = useState<number>(countdown)
+  const [scoreboard, setScoreboard] = useState({ dealer: 0, player: 0 })
 
-  const generateShuffledDeckAndDealInitialCards = () => {
-    const ranks = [
-      '2',
-      '3',
-      '4',
-      '5',
-      '6',
-      '7',
-      '8',
-      '9',
-      '10',
-      'J',
-      'Q',
-      'K',
-      'A',
-    ]
-    const suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
-    const decks: TCard[] = []
+  useEffect(() => {
+    const getScoreboard = async () => {
+      const res = await fetch('/scoreboard', { method: 'GET' })
+      const scoreboard: TScoreboard = await res.json()
 
-    // Create 6 decks
-    for (let deckIndex = 0; deckIndex < 6; deckIndex++) {
-      for (const suit of suits) {
-        for (const rank of ranks) {
-          decks.push({ rank, suit })
-        }
-      }
+      setScoreboard(scoreboard)
     }
 
-    // Shuffle the decks using Fisher-Yates algorithm
-    for (let i = decks.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      ;[decks[i], decks[j]] = [decks[j], decks[i]]
-    }
+    getScoreboard()
+  }, [winner])
+
+  const generateShuffledDeckAndDealInitialCards = async () => {
+    const res = await fetch('/getShuffledDeck')
+    const decks = await res.json()
 
     const playerInitialCards = [decks.pop(), decks.pop()].filter(
       (card) => card !== undefined
@@ -123,10 +107,13 @@ const GameBoard = ({
 
     if (playerValue > 21 || (dealerValue <= 21 && dealerValue >= playerValue)) {
       setWinner('Dealer')
+      console.log({ winner: dealerHand })
     } else if (dealerValue > 21 || playerValue > dealerValue) {
       setWinner('Player')
+      console.log({ winner: playerHand })
     } else if (playerValue === dealerValue) {
       setWinner('Draw')
+      console.log({ draw: playerHand })
     }
   }
 
@@ -149,7 +136,6 @@ const GameBoard = ({
       setPlayerHand((prevHand) => [...prevHand, newCard])
     } else {
       setWinner('Draw')
-      // TODO: end game
     }
   }
 
@@ -184,18 +170,32 @@ const GameBoard = ({
     setPlayerHand([])
     setDealerHand([])
     setWinner(undefined)
+    setSecondsRemaining(countdown)
     generateShuffledDeckAndDealInitialCards()
   }
 
   return (
     <>
+      <Scoreboard>
+        <Box mb="10px">Scoreboard</Box>
+        <Flex flexDirection="column">
+          <Flex mb="5px" justifyContent="space-between">
+            <Flex>Dealer</Flex>
+            <Flex>10</Flex>
+          </Flex>
+          <Flex justifyContent="space-between">
+            <Flex>Player</Flex>
+            <Flex>15</Flex>
+          </Flex>
+        </Flex>
+      </Scoreboard>
       <Flex flexDirection="column" alignItems="center">
         <h3>Black Jack</h3>
         {(winner && winner !== 'Draw' && <h4>{winner} wins!</h4>) || (
           <h4>
             {secondsRemaining > 0
               ? secondsRemaining
-              : `Let's play ${playerName}!`}
+              : `Hi ${playerName}! Let's play!`}
           </h4>
         )}
       </Flex>
@@ -207,14 +207,24 @@ const GameBoard = ({
           mb="15px"
           alignItems="center"
         >
-          <Hand>
-            {dealerHand.length > 0 &&
-              dealerHand.map((card) => <Card card={card} />)}
-          </Hand>
-          <Hand>
-            {playerHand.length > 0 &&
-              playerHand.map((card) => <Card card={card} />)}
-          </Hand>
+          <Flex flexDirection="column">
+            <Box mt="10px" mb="10px">
+              Dealer
+            </Box>
+            <Hand>
+              {dealerHand.length > 0 &&
+                dealerHand.map((card) => <Card card={card} />)}
+            </Hand>
+          </Flex>
+          <Flex flexDirection="column">
+            <Box mt="30px" mb="10px">
+              Player
+            </Box>
+            <Hand>
+              {playerHand.length > 0 &&
+                playerHand.map((card) => <Card card={card} />)}
+            </Hand>
+          </Flex>
         </Flex>
         <ActionButtons>
           <Flex>
