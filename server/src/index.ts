@@ -4,6 +4,7 @@ import { TCard } from './types.js'
 import express from 'express'
 import cors from 'cors'
 import fetch from 'node-fetch';
+import bodyparser from 'body-parser';
 
 //json-server
 import jsonServer from 'json-server'
@@ -12,6 +13,7 @@ const router = jsonServer.router('db.json')
 const middlewares = jsonServer.defaults()
 
 const app = express();
+app.use(bodyparser.json());
 const port = 3001;
 
 server.use(middlewares)
@@ -66,7 +68,21 @@ app.get('/scoreboard', async (request, response) => {
 })
 
 app.put('/scoreboard', async (request, response) => {
+  await fetch('http://localhost:3002/scoreboard', { method: 'PUT', body: JSON.stringify(request.body), headers: { 'Content-Type': 'application/json' } })
 
+  const res = await fetch('http://localhost:3002/scoreboard', { method: 'GET' })
+  const scoreboard = await res.json()
+
+  response.send(scoreboard)
+})
+
+app.delete('/scoreboard', async (request, response) => {
+  await fetch('http://localhost:3002/scoreboard', { method: 'PUT', body: JSON.stringify({ player: 0, dealer: 0 }), headers: { 'Content-Type': 'application/json' } })
+
+  const res = await fetch('http://localhost:3002/scoreboard', { method: 'GET' })
+  const scoreboard = await res.json()
+
+  response.send(scoreboard)
 })
 
 app.listen(port, () => {

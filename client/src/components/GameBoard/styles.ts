@@ -14,7 +14,7 @@ const StyledButton = styled.button`
 
 const GameBoardContainer = styled.div`
   display: flex;
-  height: 285px;
+  height: 350px;
   flex-direction: column;
   align-items: center;
 `
