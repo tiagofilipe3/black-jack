@@ -175,8 +175,6 @@ const GameBoard = ({
     const dealerValue = calculateHandValue(dealerHand)
     const newScoreboard = { ...scoreboard }
 
-    console.log({ playerValue, dealerValue })
-
     if (playerValue === dealerValue) {
       setWinner('Draw')
       console.log({ draw: playerHand })
